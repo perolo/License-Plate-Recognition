@@ -4,21 +4,20 @@ This project is a simple license plate detection system implemented in Python us
 
 ## Introduction
 
-The goal of this project is to develop a system that can detect license plates in images and extract the license plate numbers from the detected plates. The system uses computer vision techniques for image processing and optical character recognition (OCR) for extracting text from the detected license plates.
+The goal of this project is to refresh python, learn how to use uv and to oxidize to rust.
 
 ## Prerequisites
 
-You need to have the following libraries installed in your Python environment to run this project:
-- OpenCV
-- EasyOCR
-- Matplotlib
-
-You can install these libraries using pip:
+### Installing Python
 
 ```bash
-pip install opencv-python
-pip install easyocr
-pip install matplotlib
+nix develop
+```
+
+### Installing libraries
+
+```bash
+uv sync
 ```
 
 ## Usage
@@ -35,7 +34,7 @@ pip install matplotlib
 
 3. Run the main Python script:
    ```bash
-   python license_plate_detection.py
+   python main.py
    ```
 
 4. The script will process the input image, detect license plates, and display the result with the extracted plate numbers.
