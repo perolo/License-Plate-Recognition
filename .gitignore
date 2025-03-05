@@ -1,6 +1,5 @@
-*_*.jpg
-
+/output
 
 # Added by cargo
 
-/target
+rust/target/

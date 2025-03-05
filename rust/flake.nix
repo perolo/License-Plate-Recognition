@@ -23,9 +23,9 @@
             ];
           };
           rustBuildInputs = [
-            pkgs.libiconv
+            # pkgs.libiconv
           ] ++ lib.optionals pkgs.stdenv.isLinux [
-            pkgs.glib
+            # pkgs.glib
             pkgs.clang
             pkgs.libllvm
           ];
