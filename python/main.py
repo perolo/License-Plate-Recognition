@@ -8,15 +8,15 @@ def main():
     files = ["image1", "image2", "image3", "image4"]
     for f in files:
         print("Hello from license-plate-recognition! file: " + f)
-        img = cv2.imread(f + ".jpg")
+        img = cv2.imread("../data/" + f + ".jpg")
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         plt.imshow(cv2.cvtColor(gray, cv2.COLOR_BGR2RGB))
-        cv2.imwrite(f + "_grey.jpg", gray)
+        cv2.imwrite("../output/" + f + "_grey.jpg", gray)
 
         bfilter = cv2.bilateralFilter(gray, 11, 17, 17)
         edged = cv2.Canny(bfilter, 30, 200)
         plt.imshow(cv2.cvtColor(edged, cv2.COLOR_BGR2RGB))
-        cv2.imwrite(f + "_edged.jpg", edged)
+        cv2.imwrite("../output/" + f + "_edged.jpg", edged)
 
         keypoints = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         contours = imutils.grab_contours(keypoints)
@@ -32,7 +32,7 @@ def main():
         mask = np.zeros(gray.shape, np.uint8)
         new_image = cv2.drawContours(mask, [location], 0, 255, -1)
         new_image = cv2.bitwise_and(img, img, mask=mask)        
-        cv2.imwrite(f + "_new_image.jpg", new_image)
+        cv2.imwrite("../output/" + f + "_new_image.jpg", new_image)
 
         plt.imshow(cv2.cvtColor(new_image, cv2.COLOR_BGR2RGB))
 
@@ -53,7 +53,7 @@ def main():
         res = cv2.rectangle(img, tuple(approx[0][0]), tuple(approx[2][0]), (0,255,0), 3)
         plt.imshow(cv2.cvtColor(res, cv2.COLOR_BGR2RGB))
 
-        cv2.imwrite(f + "_res.jpg", res)
+        cv2.imwrite("../output/" + f + "_res.jpg", res)
 
 if __name__ == "__main__":
     main()
