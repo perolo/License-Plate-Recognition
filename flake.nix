@@ -33,6 +33,7 @@
         in pkgs.mkShell {
           buildInputs = (with pkgs; [
             uv
+            rustup
             ruff
             python311Packages.pip
             python311Packages.numpy
@@ -45,7 +46,7 @@
             python311Packages.matplotlib
           ]);
           shellHook = ''
-            export PS1='\n\[\033[1;34m\](Python):\w]\$\[\033[0m\]'
+            export PS1='\n\[\033[1;34m\](Python + Rust):\w]\$ \[\033[0m\]'
             echo "Welcome to the $name development shell!"
             echo "All necessary libraries and tools are installed."
           '';          

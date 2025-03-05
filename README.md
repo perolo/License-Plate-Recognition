@@ -6,13 +6,40 @@ This project is a simple license plate detection system implemented in Python us
 
 The goal of this project is to refresh python, learn how to use uv and to oxidize to rust.
 
+Planned tasks:
+* [x] clone project
+* [x] Build Python + replicate results
+  * [x] Using Jupiter
+  * [x] Using separate main.py
+* [ ] Create nix environment with Python and uv
+  * Not able to create stable environment - intermittent problems with building the environment with "nix develop"
+  * Not able to use uv as package manager, debugging fails
+* [ ] Create nix environment with rust
+  * Not able to create stable environment - Not able to build opencv under NixOs
+* [x] Create a separate rust docker builder with opencv src/Dockerfile
+  * [x] First translation into rust
+  * [ ] Rewrite all into Rust
+* [ ] Create a separate python + uv docker builder with opencv python/Dockerfile
+  * [ ] Compare pip and uv
+* [ ] Performance comparison Rust/Python
+
 ## Prerequisites
 
-### Installing Python
+### Building using Docker
+
+```bash
+$ docker run -it -v ./:/src rustcv  bash
+$ cd src
+$ cargo build
+
+```
+
+### Installing Python in Nix
 
 ```bash
 nix develop
 ```
+* [ ] Failing to write flake.nix
 
 ### Installing libraries
 
