@@ -1,7 +1,19 @@
 use opencv::core;
-use opencv::imgcodecs::{have_image_reader, imread, imwrite, IMREAD_COLOR};
-use opencv::imgproc::{bilateral_filter, canny, cvt_color, COLOR_BGR2GRAY};
+//use opencv::core::Point;
+use opencv::core::{bitwise_and, min_max_loc, Mat, Point, Rect, Scalar, CV_8UC1};
+use opencv::imgcodecs::{have_image_reader, imencode, imread, imwrite, IMREAD_COLOR};
+use opencv::imgproc::{
+    approx_poly_dp, bilateral_filter, canny, contour_area, cvt_color, draw_contours, find_contours,
+    CHAIN_APPROX_SIMPLE, COLOR_BGR2GRAY, RETR_TREE,
+};
 use opencv::prelude::*;
+//use pyo3::prelude::*;
+//use pyo3::types::PyBytes;
+//use tesseract::Tesseract;
+
+//use opencv::types::VectorOfMat;
+
+//use opencv::types::VectorOfVectorOfPoint;
 
 //use opencv::types::VectorOfMat;
 
@@ -66,40 +78,71 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             //contours = imutils.grab_contours(keypoints)
 
             // Vector to store contours
-            /*
-                        let mut contours = opencv::types::VectorOfMat::new();
-                        let mut hierarchy = Mat::default();
 
-                        // Find contours
-                        find_contours(
-                            &edged,
-                            &mut contours,
-                            &mut hierarchy,
-                            imgproc::RETR_TREE,
-                            imgproc::CHAIN_APPROX_SIMPLE,
-                            core::Point::new(0, 0),
-                        )?;
+            //let mut contours = opencv::types::VectorOfMat::new();
+            //let mut contours: Vec<Mat> = vec![];
+            //let mut contours = Mat::default();
+            //let mut contours: Vec<Vec<Point>> = vec![vec![]];
+            //let mut contours = VectorOfVectorOfPoint::new();
+            let mut contours: core::Vector<core::Vector<core::Point>> = core::Vector::new();
+            //std::vector<std::vectorcv::Point >
+            //let mut hierarchy = Mat::default();
 
-                        // Convert `VectorOfMat` to `Vec<Mat>` for sorting
-                        let mut contours_vec: Vec<Mat> = contours.to_vec();
+            // Find contours
+            find_contours(
+                &edged,
+                &mut contours,
+                //&mut hierarchy,
+                RETR_TREE,
+                CHAIN_APPROX_SIMPLE,
+                core::Point::new(0, 0),
+            )?;
+            println!("Contours found: {}", contours.len());
+            let mut i = 0;
+            for countour in &contours {
+                println!("Countour: {}", countour.len());
+                i += 1;
+                if i > 10 {
+                    break;
+                }
+            }
 
-                        //contours = sorted(contours, key=cv2.contourArea, reverse=True)[:10]
-                        // Sort contours by area in descending order and keep the top 10
-                        contours_vec.sort_by(|a, b| {
-                            let area_a = imgproc::contour_area(a, false).unwrap_or(0.0);
-                            let area_b = imgproc::contour_area(b, false).unwrap_or(0.0);
-                            area_b.partial_cmp(&area_a).unwrap() // Reverse order for descending sort
-                        });
+            // Convert `VectorOfMat` to `Vec<Mat>` for sorting
+            let mut contours_vec: Vec<core::Vector<core::Point>> = contours.to_vec();
 
-                        let top_contours: Vec<Mat> = contours_vec.into_iter().take(10).collect();
-            */
+            //contours = sorted(contours, key=cv2.contourArea, reverse=True)[:10]
+            // Sort contours by area in descending order and keep the top 10
+            contours_vec.sort_by(|a, b| {
+                let area_a = contour_area(a, false).unwrap_or(0.0);
+                let area_b = contour_area(b, false).unwrap_or(0.0);
+                area_b.partial_cmp(&area_a).unwrap() // Reverse order for descending sort
+            });
+
+            let top_contours: Vec<core::Vector<core::Point>> =
+                contours_vec.into_iter().take(10).collect();
+
+            println!("top Contours found: {}", top_contours.len());
+
+            let mut i = 0;
+            for countour in &top_contours {
+                println!("Countour: {}", countour.len());
+                i += 1;
+                if i > 10 {
+                    break;
+                }
+            }
+
             //mask = np.zeros(gray.shape, np.uint8)
-            //new_image = cv2.drawContours(mask, [location], 0, 255, -1)
-            //new_image = cv2.bitwise_and(img, img, mask=mask)
-            //cv2.imwrite(f + "_new_image.jpg", new_image)
+            let size = gray_img.size()?;
+            let mut mask = Mat::new_size_with_default(size, CV_8UC1, Scalar::all(0.0))?;
 
             //location = None
             //let mut location: Option<Mat> = None;
+
+            //new_image = cv2.drawContours(mask, [location], 0, 255, -1)
+            //let location = VectorOfVectorOfPoint::new(); // Replace with actual location VectorOfPoint
+            //let mut location: core::Vector<core::Point> = core::Vector::new();
+            let mut location = Mat::default();
 
             //for contour in contours:
             //    approx = cv2.approxPolyDP(contour, 10, True)
@@ -107,81 +150,108 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             //        location = approx
             //        break
             // Find the contour that approximates a quadrilateral
-            /*
-            for contour in &contours {
+
+            for contour in &top_contours {
                 let mut approx = Mat::default();
-                approx_poly_dp(contour, &mut approx, 10.0, true)?;
+                approx_poly_dp(&contour, &mut approx, 10.0, true)?;
                 if approx.rows() == 4 {
-                    location = Some(approx);
+                    location = approx;
+                    println!("Location found!: {:?}", location);
                     break;
                 }
             }
 
-            if let Some(location) = location {
-                // Create a black mask with the same size as `gray`
-                let mut mask = Mat::zeros(gray.rows(), gray.cols(), core::CV_8U)?.to_mat()?;
+            //new_image = cv2.drawContours(mask, [location], 0, 255, -1)
+            //let mut wrapped_location: Vec<Mat> = core::Vector::new().into();
+            //wrapped_location.push(location.clone());
+            //let mut wrapped_location = Mat::default();
+            //wrapped_location.push(&location)?;
+            //let mut wrapped_location = VectorOfMat::new();
+            //wrapped_location.push(location);
+            //let mut wrapped_location = [[location.clone()]];
+            let mut wrapped_location: core::Vector<Mat> =
+                core::Vector::from(vec![location.clone()]);
 
-                // Draw the contour on the mask
-                match draw_contours(
-                    &mut mask,
-                    &opencv::types::VectorOfMat::from_iter(vec![location.clone()]),
-                    -1,
-                    core::Scalar::new(255.0, 255.0, 255.0, 255.0),
-                    -1,
-                    imgproc::LINE_8,
-                    &Mat::default(),
-                    0,
-                    core::Point::new(0, 0),
-                ) {
-                    Ok(_) => {
-                        println!("Image conv OK!");
-                    }
-                    Err(_) => {
-                        println!("failed to contour image!");
-                        return;
-                    }
-                }
+            println!("wrapped_location : {:?}", wrapped_location);
 
-                // Apply bitwise AND to keep only the selected region
-                let mut new_image = Mat::default();
-                match bitwise_and(&img, &img, &mut new_image, &mask) {
-                    Ok(_) => {
-                        println!("Image conv OK!");
-                    }
-                    Err(_) => {
-                        println!("failed to bitwand image!");
-                        return Ok();
-                    }
-                }
+            let mut new_image = Mat::default();
+            draw_contours(
+                &mut mask,
+                &wrapped_location,
+                -1,
+                Scalar::all(255.0),
+                -1,
+                opencv::imgproc::LINE_8,
+                &Mat::default(),
+                0,
+                opencv::core::Point::new(0, 0),
+            )?;
+            let mname = format!("../output/{}_mask2.jpg", f);
+            imwrite(&mname, &mask, &core::Vector::new())?;
 
-                // Save the new image
-                let nname = format!("../output/{}_new.jpg", f);
-                match imwrite(&nname, &new_image, &core::Vector::new()) {
-                    Ok(_) => {
-                        println!("Image conv OK!");
-                    }
-                    Err(err) => {
-                        println!("failed to write image!");
-                        return err;
-                    }
-                }
-            }
-            } else {
-                println!("failed to load image!");
-            }
-                */
-
+            //new_image = cv2.bitwise_and(img, img, mask=mask)
+            bitwise_and(&img, &img, &mut new_image, &mask)?;
+            //cv2.imwrite(f + "_new_image.jpg", new_image)
+            let nname = format!("../output/{}_new_image2.jpg", f);
+            imwrite(&nname, &new_image, &core::Vector::new())?;
             /*
+            //(x,y) = np.where(mask==255)
+            //(x1, y1) = (np.min(x), np.min(y))
+            //(x2, y2) = (np.max(x), np.max(y))
+            //cropped_image = gray[x1:x2+1, y1:y2+1]
+
+            let mut non_zero_points = Mat::default();
+            find_non_zero(&mask, &mut non_zero_points)?;
+
+            let (x_min, y_min, x_max, y_max) = if non_zero_points.rows() > 0 {
+                let mut min_point = Point::new(0, 0);
+                let mut max_point = Point::new(0, 0);
+                min_max_loc(
+                    &non_zero_points,
+                    Some(&mut min_point),
+                    Some(&mut max_point),
+                    None,
+                    None,
+                )?;
+                (min_point.x, min_point.y, max_point.x, max_point.y)
+            } else {
+                (0, 0, 0, 0)
+            };
+
+            let rect = Rect::new(
+                x_min,
+                y_min,
+                (x_max - x_min + 1) as i32,
+                (y_max - y_min + 1) as i32,
+            );
+            let cropped_image = Mat::roi(&gray, rect)?;
+
+            //reader = easyocr.Reader(['en'])
+            //result = reader.readtext(cropped_image)
+            //result
+
+            // Initialize Tesseract
+            let mut buffer = Vec::new();
+            imencode(
+                ".png",
+                &cropped_image,
+                &mut buffer,
+                &opencv::core::Vector::new(),
+            )?;
 
 
+
+
+            let mut tess = Tesseract::new(None, Some("eng"))?;
+            tess.set_image_from_mem(&buffer)?;
+
+            // Perform OCR
+            let result = tess.get_text()?;
+
+            println!("OCR Result: {}", result);
 
 
                     plt.imshow(cv2.cvtColor(new_image, cv2.COLOR_BGR2RGB))
-
-                    (x,y) = np.where(mask==255)
-                    (x1, y1) = (np.min(x), np.min(y))
-                    (x2, y2) = (np.max(x), np.max(y))
-                    cropped_image = gray[x1:x2+1, y1:y2+1]
 
                     plt.imshow(cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB))
 
