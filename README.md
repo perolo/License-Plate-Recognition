@@ -19,8 +19,8 @@ Planned tasks:
 * [x] Create a separate rust docker builder with opencv src/Dockerfile
   * [x] First translation into rust
   * [ ] Rewrite all into Rust
-* [ ] Create a separate python + uv docker builder with opencv python/Dockerfile
-  * [ ] Compare pip and uv
+* [x] Create a separate python + uv docker builder with opencv python/Dockerfile
+  * [x] Compare pip and uv
 * [ ] Performance comparison Rust/Python
 
 ## Prerequisites
@@ -65,6 +65,47 @@ uv sync
    ```
 
 4. The script will process the input image, detect license plates, and display the result with the extracted plate numbers.
+
+## Performance
+
+### Python
+
+```bash
+$ docker build -t python python/.
+$ docker run -it -v ./:/src python  bash
+$ time python3 main.py
+OCR Result: HR.26 BR.9044
+Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+OCR Result: ICOVIDT9
+Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+OCR Result: EBJY. 982]
+Neither CUDA nor MPS are available - defaulting to CPU. Note: This module is much faster with a GPU.
+OCR Result: H982 FKL
+
+real	0m8.363s
+user	0m8.657s
+sys	  0m1.022s
+
+```
+
+
+### Rust 
+
+```bash
+$ docker build -t rustcv rust/.
+$ docker run -it -v ./:/src rustcv  bash
+$ time cargo run
+  OCR Result: THR 26.BR 9044,
+  OCR Result: *COVIDI9
+  OCR Result: BUY -982|
+  OCR Result: HS82 FKL
+
+real	0m0.458s
+user	0m0.739s
+sys 	0m0.064s
+```
+
+
 
 ## Workflow
 

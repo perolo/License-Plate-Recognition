@@ -11,11 +11,10 @@ FROM ghcr.io/astral-sh/uv:0.6.5-python3.13-bookworm
 #RUN pip3 install --break-system-packages --no-cache-dir easyocr imutils
 
 # Copy the project into the image
-ADD .. /app
+ADD ../. /app
 
 # Change the working directory to the `app` directory
 WORKDIR /app/python-uv
-
 
 # Copy the lockfile and `pyproject.toml` into the image
 #ADD ./python-uv/uv.lock /app/uv.lock
@@ -25,9 +24,9 @@ WORKDIR /app/python-uv
 RUN uv sync --frozen --no-install-project
 
 # Sync the project
-RUN uv sync --frozen
+#RUN uv sync --frozen
 
-RUN apt-get update && apt-get install -y python3-opencv python3-numpy python3-matplotlib
+#RUN apt-get update && apt-get install -y python3-opencv python3-numpy python3-matplotlib
 
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH"
