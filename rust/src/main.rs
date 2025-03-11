@@ -26,7 +26,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn ocr_licenseplate(car_image: &str, write_intermediate: bool) -> Result<String, Box<dyn std::error::Error>> {
+fn ocr_licenseplate(
+    car_image: &str,
+    write_intermediate: bool,
+) -> Result<String, Box<dyn std::error::Error>> {
     //img = cv2.imread(f + ".jpg")
     //let fname = "../data/".to_owned() + f + ".jpg";
     let fname = format!("../data/{}.jpg", car_image);
@@ -50,9 +53,9 @@ fn ocr_licenseplate(car_image: &str, write_intermediate: bool) -> Result<String,
         )?;
         let mut edged = Mat::default();
         canny(&bfilter, &mut edged, 30.0, 200.0, 3, false)?;
-        if write_intermediate { 
+        if write_intermediate {
             let ename = format!("../output/{}_edged2.jpg", car_image);
-        imwrite(&ename, &edged, &core::Vector::new())?;
+            imwrite(&ename, &edged, &core::Vector::new())?;
         }
         let mut contours: core::Vector<core::Vector<core::Point>> = core::Vector::new();
         find_contours(
@@ -98,13 +101,12 @@ fn ocr_licenseplate(car_image: &str, write_intermediate: bool) -> Result<String,
         )?;
         if write_intermediate {
             let mname = format!("../output/{}_mask2.jpg", car_image);
-        imwrite(&mname, &mask, &core::Vector::new())?;
+            imwrite(&mname, &mask, &core::Vector::new())?;
         }
         bitwise_and(&img, &img, &mut new_image, &mask)?;
         if write_intermediate {
-
-        let nname = format!("../output/{}_new_image2.jpg", car_image);
-        imwrite(&nname, &new_image, &core::Vector::new())?;
+            let nname = format!("../output/{}_new_image2.jpg", car_image);
+            imwrite(&nname, &new_image, &core::Vector::new())?;
         }
         let mut non_zero_points = Mat::default();
         find_non_zero(&mask, &mut non_zero_points)?;
@@ -112,7 +114,7 @@ fn ocr_licenseplate(car_image: &str, write_intermediate: bool) -> Result<String,
         let cropped_image = Mat::roi(&gray_img, bounding_box)?;
         if write_intermediate {
             let cname = format!("../output/{}_cropped_image2.jpg", car_image);
-        imwrite(&cname, &cropped_image, &core::Vector::new())?;
+            imwrite(&cname, &cropped_image, &core::Vector::new())?;
         }
         let mut buffer: Vector<u8> = Vector::new();
         imencode(
@@ -124,7 +126,7 @@ fn ocr_licenseplate(car_image: &str, write_intermediate: bool) -> Result<String,
         let result = {
             let tess = Tesseract::new(None, Some("eng"))?;
             let buf = buffer.as_slice();
-            tess.set_image_from_mem(&buf)?.get_text()?
+            tess.set_image_from_mem(buf)?.get_text()?
         };
         Ok(result)
     } else {
@@ -149,7 +151,6 @@ mod tests {
         assert_eq!(&result_text, expected);
     }
 
-    
     #[test]
     fn test_ocr_licenseplate_invalid_image() {
         let result = ocr_licenseplate("non_existent_image", false);

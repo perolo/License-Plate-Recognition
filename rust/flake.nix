@@ -14,11 +14,11 @@
   }:
     flake-utils.lib.eachDefaultSystem (system: let
       pkgs = nixpkgs.legacyPackages.${system};
+      rustToolchain = pkgs.rustup.defaultToolchain;
     in {
       devShell = pkgs.mkShell {
         buildInputs = with pkgs; [
-          rustc
-          cargo
+          rustup # Use rustup to manage Rust toolchains
           clang_14
           llvmPackages_14.libclang
           #clang
@@ -47,10 +47,16 @@
         LIBCLANG_PATH = "${pkgs.llvmPackages_14.libclang.lib}/lib";
 
         # Optional: Set other environment variables if needed
-        
         shellHook = ''
-          echo "Rust development environment ready!";
-          export PS1='\n\[\033[1;34m\](Rust):\w]\$\[\033[0m\]';
+          # Install the default Rust toolchain and components
+          rustup toolchain install stable --profile minimal
+          rustup component add rustfmt
+          rustup component add clippy
+
+          # For rust-analyzer 'hover' tooltips to work
+          export RUST_SRC_PATH="$(rustc --print sysroot)/lib/rustlib/src/rust/library"
+          echo "Rust development environment ready!"
+          export PS1='\n\[\033[1;34m\](Rust):\w]\$\[\033[0m\]'
         '';
       };
     });
