@@ -15,7 +15,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let files = ["image1", "image2", "image3", "image4"];
     //for f in files:
     for f in files {
-        let res = ocr_licenseplate(f);
+        let res = ocr_licenseplate(f, false);
         if let Ok(result) = res {
             println!("OCR Result: {}", result);
         } else {
@@ -26,18 +26,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn ocr_licenseplate(f: &str) -> Result<String, Box<dyn std::error::Error>> {
+fn ocr_licenseplate(car_image: &str, write_intermediate: bool) -> Result<String, Box<dyn std::error::Error>> {
     //img = cv2.imread(f + ".jpg")
     //let fname = "../data/".to_owned() + f + ".jpg";
-    let fname = format!("../data/{}.jpg", f);
-
+    let fname = format!("../data/{}.jpg", car_image);
     have_image_reader(&fname)?;
     if let Ok(img) = imread(&fname, IMREAD_COLOR) {
         let mut gray_img = Mat::default();
         let hint: AlgorithmHint = AlgorithmHint::ALGO_HINT_DEFAULT;
         cvt_color(&img, &mut gray_img, COLOR_BGR2GRAY, 0, hint)?;
-        let oname = format!("../output/{}_gray2.jpg", f);
-        imwrite(&oname, &gray_img, &core::Vector::new())?;
+        if write_intermediate {
+            let gname = format!("../output/{}_gray.jpg", car_image);
+            imwrite(&gname, &gray_img, &core::Vector::new())?;
+        }
         let mut bfilter = Mat::default();
         bilateral_filter(
             &gray_img,
@@ -49,8 +50,10 @@ fn ocr_licenseplate(f: &str) -> Result<String, Box<dyn std::error::Error>> {
         )?;
         let mut edged = Mat::default();
         canny(&bfilter, &mut edged, 30.0, 200.0, 3, false)?;
-        let ename = format!("../output/{}_edged2.jpg", f);
+        if write_intermediate { 
+            let ename = format!("../output/{}_edged2.jpg", car_image);
         imwrite(&ename, &edged, &core::Vector::new())?;
+        }
         let mut contours: core::Vector<core::Vector<core::Point>> = core::Vector::new();
         find_contours(
             &edged,
@@ -93,17 +96,24 @@ fn ocr_licenseplate(f: &str) -> Result<String, Box<dyn std::error::Error>> {
             0,
             opencv::core::Point::new(0, 0),
         )?;
-        let mname = format!("../output/{}_mask2.jpg", f);
+        if write_intermediate {
+            let mname = format!("../output/{}_mask2.jpg", car_image);
         imwrite(&mname, &mask, &core::Vector::new())?;
+        }
         bitwise_and(&img, &img, &mut new_image, &mask)?;
-        let nname = format!("../output/{}_new_image2.jpg", f);
+        if write_intermediate {
+
+        let nname = format!("../output/{}_new_image2.jpg", car_image);
         imwrite(&nname, &new_image, &core::Vector::new())?;
+        }
         let mut non_zero_points = Mat::default();
         find_non_zero(&mask, &mut non_zero_points)?;
         let bounding_box: Rect = bounding_rect(&non_zero_points)?;
         let cropped_image = Mat::roi(&gray_img, bounding_box)?;
-        let cname = format!("../output/{}_cropped_image2.jpg", f);
+        if write_intermediate {
+            let cname = format!("../output/{}_cropped_image2.jpg", car_image);
         imwrite(&cname, &cropped_image, &core::Vector::new())?;
+        }
         let mut buffer: Vector<u8> = Vector::new();
         imencode(
             ".png",
@@ -133,7 +143,7 @@ mod tests {
     #[case("image3", "BJY -982|\n")]
     #[case("image4", "HS82 FKL\n")]
     fn test_ocr_licenseplate(#[case] image_name: &str, #[case] expected: &str) {
-        let result = ocr_licenseplate(image_name);
+        let result = ocr_licenseplate(image_name, false);
         assert!(result.is_ok());
         let result_text = result.unwrap();
         assert_eq!(&result_text, expected);
@@ -142,7 +152,7 @@ mod tests {
     
     #[test]
     fn test_ocr_licenseplate_invalid_image() {
-        let result = ocr_licenseplate("non_existent_image");
+        let result = ocr_licenseplate("non_existent_image", false);
         assert!(result.is_err());
     }
 }
