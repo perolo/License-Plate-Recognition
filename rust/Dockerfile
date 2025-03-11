@@ -1,4 +1,3 @@
-#FROM ekidd/rust-musl-builder:latest
 FROM rust
 
 # Install dependencies
@@ -21,13 +20,6 @@ RUN apt-get install -y autoconf automake libtool \
     libopenjp2-7-dev \
     libgif-dev \
     libarchive-dev libcurl4-openssl-dev 
-
-#FROM rus
-#RUN apt-get update && apt-get install -y libopencv-dev llvm clang libclang-dev 
-#RUN apt-get install -y liblept5 tesseract-ocr tesseract-ocr-eng libtesseract-dev
-
-#libopencv-dev clang libclang-dev
-#libleptonica-dev
 
 ENV LIBCLANG_PATH=/usr/lib/llvm-14/lib
 

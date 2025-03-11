@@ -4,11 +4,13 @@ use opencv::core::{bitwise_and,  Mat, Rect, Scalar, CV_8UC1};
 use opencv::imgcodecs::{have_image_reader, imencode, imread, imwrite, IMREAD_COLOR};
 use opencv::imgproc::{
     approx_poly_dp, bilateral_filter, canny, contour_area, cvt_color, draw_contours, find_contours,
-    CHAIN_APPROX_SIMPLE, COLOR_BGR2GRAY, RETR_TREE,
+    CHAIN_APPROX_SIMPLE, COLOR_BGR2GRAY, RETR_TREE
 };
 use opencv::prelude::*;
 
 use opencv::core::find_non_zero;
+//use opencv::core::ALGO_HINT_DEFAULT;
+use opencv::core::AlgorithmHint;
 use opencv::imgproc::bounding_rect;
 
 //use pyo3::prelude::*;
@@ -49,7 +51,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let mut gray_img = Mat::default();
 
             // Convert the image to grayscale using cvtColor
-            cvt_color(&img, &mut gray_img, COLOR_BGR2GRAY, 0)?;
+            // Apparently using different opencv versions when building from nix flake and from docker image...
+            // Not able to understand the issue. So, using the default hint for now (building from nix).
+            let hint : AlgorithmHint = AlgorithmHint::ALGO_HINT_DEFAULT;
+            cvt_color(&img, &mut gray_img, COLOR_BGR2GRAY, 0, hint)?;
 
             // Save the grayscale image
             //plt.imshow(cv2.cvtColor(gray, cv2.COLOR_BGR2RGB))
