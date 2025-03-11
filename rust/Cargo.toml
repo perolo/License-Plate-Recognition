@@ -7,3 +7,6 @@ edition = "2021"
 clang-sys = { version = "1.8.1", features = ["clang_14_0"] }
 opencv = { version = "0.94.2", features = ["clang-runtime"] }
 tesseract = "0.15.1"
+
+[dev-dependencies]
+rstest = "0.18.2"

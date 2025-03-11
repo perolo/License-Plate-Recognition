@@ -121,3 +121,28 @@ fn ocr_licenseplate(f: &str) -> Result<String, Box<dyn std::error::Error>> {
         Err("Error reading image".into())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::rstest;
+
+    #[rstest]
+    #[case("image1", "IHR 26.BR 9044,\n")]
+    #[case("image2", ":COVID{9\n")]
+    #[case("image3", "BJY -982|\n")]
+    #[case("image4", "HS82 FKL\n")]
+    fn test_ocr_licenseplate(#[case] image_name: &str, #[case] expected: &str) {
+        let result = ocr_licenseplate(image_name);
+        assert!(result.is_ok());
+        let result_text = result.unwrap();
+        assert_eq!(&result_text, expected);
+    }
+
+    
+    #[test]
+    fn test_ocr_licenseplate_invalid_image() {
+        let result = ocr_licenseplate("non_existent_image");
+        assert!(result.is_err());
+    }
+}
