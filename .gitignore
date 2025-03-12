@@ -3,3 +3,6 @@
 # Added by cargo
 
 rust/target/
+__pycache__/
+.venv/
+.ruff_cache/

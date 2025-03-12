@@ -73,7 +73,7 @@ fn ocr_licenseplate(
             area_b.partial_cmp(&area_a).unwrap() // Reverse order for descending sort
         });
         let top_contours: Vec<core::Vector<core::Point>> =
-            contours_vec.into_iter().take(10).collect();
+            contours_vec.into_iter().take(20).collect();
         let size = gray_img.size()?;
         let mut mask = Mat::new_size_with_default(size, CV_8UC1, Scalar::all(0.0))?;
         let mut location = Mat::default();
@@ -86,6 +86,12 @@ fn ocr_licenseplate(
                 break;
             }
         }
+        if location.empty() {
+            return Err(Box::new(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            "Location is empty!"
+            )));
+        }        
         let wrapped_location: core::Vector<Mat> = core::Vector::from(vec![location.clone()]);
         let mut new_image = Mat::default();
         draw_contours(
@@ -144,8 +150,13 @@ mod tests {
     #[case("image2", ":COVID{9\n")]
     #[case("image3", "BJY -982|\n")]
     #[case("image4", "HS82 FKL\n")]
+    #[case("image_a", "CFM 882\n")]
+    #[case("image_b", "CFM 882\n")]
+    #[case("image_c", "CFM 882\n")]
+    #[case("image_d", "CFM 882\n")]
+    #[case("image_e", "CFM 882\n")]
     fn test_ocr_licenseplate(#[case] image_name: &str, #[case] expected: &str) {
-        let result = ocr_licenseplate(image_name, false);
+        let result = ocr_licenseplate(image_name, true);
         assert!(result.is_ok());
         let result_text = result.unwrap();
         assert_eq!(&result_text, expected);
