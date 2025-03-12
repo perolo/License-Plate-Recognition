@@ -14,14 +14,25 @@ Planned tasks:
 * [ ] Create nix environment with Python and uv
   * Not able to create stable environment - intermittent problems with building the environment with "nix develop"
   * Not able to use uv as package manager, debugging fails
-* [ ] Create nix environment with rust
+* [x] Create nix environment with rust
   * Not able to create stable environment - Not able to build opencv under NixOs
+    * -> More complex build environment
 * [x] Create a separate rust docker builder with opencv src/Dockerfile
   * [x] First translation into rust
-  * [ ] Rewrite all into Rust
+  * [x] Rewrite all into Rust
+    * All the way to OCR, skipped the rest - PoC enogh
+  * [x] Added parametric test fw in rust and python
 * [x] Create a separate python + uv docker builder with opencv python/Dockerfile
   * [x] Compare pip and uv
-* [ ] Performance comparison Rust/Python
+* [x] Performance comparison Rust/Python
+  * -> 10-20x performance improvement
+
+#  Retrospect
+  * Easier to rewrite in rust than I tought
+  * Main time spent with creating build environments
+  * 20x performance improvement
+  * Algorithm very vulnerable - not sure what the expected requirements are, a lot of parameters and ad hoc assumptions
+  
 
 ## Prerequisites
 
